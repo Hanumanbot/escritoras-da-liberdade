@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escritoras da Liberdade - Programa Popular de Ensino para Pessoas Pretas | Projeto Baobá</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for Performance Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            baoba: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            },
+            terracotta: {
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-stone-950 text-stone-100 min-h-screen flex flex-col font-sans antialiased selection:bg-amber-600 selection:text-white">
+
+  <!-- Top Navigation & Global Controls -->
+  <header class="bg-stone-950/90 backdrop-blur border-b border-amber-900/30 sticky top-0 z-50 px-4 lg:px-8 py-3 transition-all">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Project Baobá Info -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 flex items-center justify-center shadow-lg shadow-amber-900/30 ring-2 ring-amber-500/20 text-2xl">
+          🌳
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-black text-lg md:text-xl tracking-tight bg-gradient-to-r from-amber-200 via-amber-100 to-orange-200 bg-clip-text text-transparent">
+              Escritoras da Liberdade
+            </span>
+            <span id="tenantBadgeHeader" class="px-2 py-0.5 text-[11px] font-extrabold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">DANDARA</span>
+          </div>
+          <p class="text-xs text-stone-400 flex items-center gap-1.5">
+            <span class="text-amber-500 font-semibold">Projeto Baobá</span> • <span id="tenantNameHeader">Polo Dandara dos Palmares (Salvador - BA)</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Center: Polo / Núcleo Switcher (Multi-tenant Baobá) -->
+      <div class="flex items-center space-x-2 bg-stone-900/80 border border-amber-900/40 rounded-xl p-1">
+        <span class="text-xs font-semibold text-amber-400/90 px-2 flex items-center gap-1.5">
+          📍 Polo Regional:
+        </span>
+        <select id="tenantSelect" class="bg-stone-800 text-xs text-stone-200 border-none rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-amber-500 focus:outline-none cursor-pointer">
+          <option value="tenant-baoba-salvador">Polo Dandara dos Palmares (Salvador - BA)</option>
+          <option value="tenant-baoba-sp">Núcleo Carolina Maria de Jesus (São Paulo - SP)</option>
+          <option value="tenant-baoba-rj">Polo Lélia Gonzalez (Rio de Janeiro - RJ)</option>
+        </select>
+      </div>
+
+      <!-- Right: Role Switcher & User Profile -->
+      <div class="flex items-center space-x-4">
+        <!-- Live status tag -->
+        <div class="hidden sm:flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-semibold text-emerald-400" id="liveCapacityTag">Oficina Ao Vivo: 84 / 100 Educandas</span>
+        </div>
+
+        <!-- Role Selector Pill -->
+        <div class="flex items-center bg-stone-900 border border-amber-900/40 rounded-xl p-1">
+          <button id="roleBtnAluno" onclick="setRole('aluno')" class="role-pill active px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+            🎓 Educanda
+          </button>
+          <button id="roleBtnProfessor" onclick="setRole('professor')" class="role-pill px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-stone-400 hover:text-stone-200">
+            👩🏾‍🏫 Educadora
+          </button>
+          <button id="roleBtnMaster" onclick="setRole('master')" class="role-pill px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-stone-400 hover:text-stone-200">
+            👑 Master Baobá
+          </button>
+        </div>
+
+        <!-- Current User Avatar -->
+        <div class="flex items-center space-x-3 pl-2 border-l border-stone-800">
+          <img id="userAvatar" src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150" alt="Avatar" class="w-9 h-9 rounded-full ring-2 ring-amber-500/40 object-cover">
+          <div class="hidden md:block text-left">
+            <p id="userNameDisplay" class="text-xs font-bold text-stone-200">Marielle Oliveira</p>
+            <p id="userRoleDisplay" class="text-[11px] text-amber-400 font-medium">Educanda de Literatura</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Secondary Navigation Tabs based on Role -->
+  <nav class="bg-stone-950/60 border-b border-stone-800/80 px-4 lg:px-8 py-2">
+    <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto gap-4">
+      
+      <!-- Role Tabs -->
+      <div id="navigationTabs" class="flex items-center space-x-1.5">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Quick Action Button -->
+      <div id="headerQuickAction" class="shrink-0">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+
+    <!-- ======================================================== -->
+    <!-- 1. EDUCANDA (ALUNA) VIEW: DESEMPENHO, TEXTOS E SALA VIRTUAL -->
+    <!-- ======================================================== -->
+    <div id="alunoContainer" class="space-y-6 role-container">
+      
+      <!-- Tab 1: Desempenho e Memoriais -->
+      <section id="alunoTabDesempenho" class="tab-pane space-y-6">
+        
+        <!-- Welcome Hero with Baobá Motifs -->
+        <div class="bg-gradient-to-r from-amber-950/50 via-stone-900 to-orange-950/40 border border-amber-500/20 rounded-3xl p-6 lg:p-8 relative overflow-hidden shadow-2xl">
+          <div class="absolute -right-8 -bottom-8 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2.5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                ✊🏾 Educação Popular para Pessoas Pretas • Projeto Baobá
+              </span>
+              <h1 class="text-2xl lg:text-3xl font-extrabold text-white">
+                Ubuntu, Marielle! Aqui floresce a sua escrita.
+              </h1>
+              <p class="text-stone-300 text-sm max-w-2xl leading-relaxed">
+                No <strong>Escritoras da Liberdade</strong>, cada palavra registrada é um ato de memória e emancipação. Acompanhe suas produções de escrevivência, notas e os pareceres pedagógicos das educadoras.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="switchTab('alunoTabSala')" class="px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs md:text-sm flex items-center gap-2 shadow-lg shadow-amber-600/30 transition-all hover:scale-[1.02]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                Entrar na Oficina Ao Vivo (84 Conectadas)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm hover:border-amber-900/50 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Rendimento Crítico</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+                ★
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+              <span id="alunoAvgScore" class="text-3xl font-extrabold text-white">9.8</span>
+              <span class="text-xs text-emerald-400 font-bold">/ 10.0 (Destaque)</span>
+            </div>
+            <p class="text-xs text-stone-400 mt-1">Excelência nas produções literárias</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm hover:border-amber-900/50 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Presença nas Rodas</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+                ✓
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+              <span id="alunoAttendance" class="text-3xl font-extrabold text-white">98.0%</span>
+              <span class="text-xs text-emerald-400 font-bold">34/35 Oficinas</span>
+            </div>
+            <p class="text-xs text-stone-400 mt-1">Frequência ativa e participação nas dúvidas</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm hover:border-amber-900/50 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Textos & Ensaios</span>
+              <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center font-bold">
+                📜
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+              <span id="alunoTasksCount" class="text-3xl font-extrabold text-white">5 Entregues</span>
+              <span class="text-xs text-stone-400 font-medium">100% avaliados</span>
+            </div>
+            <p class="text-xs text-amber-400 mt-1">1 novo memorial aberto para envio</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm hover:border-amber-900/50 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Capacidade da Turma</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+                👥
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+              <span class="text-3xl font-extrabold text-white">100 vagas</span>
+              <span class="text-xs text-amber-400 font-bold">Alta Escala</span>
+            </div>
+            <p class="text-xs text-stone-400 mt-1">Transmissão WebRTC com acolhimento</p>
+          </div>
+
+        </div>
+
+        <!-- Performance Chart & Submissions History -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Chart -->
+          <div class="lg:col-span-2 bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-base font-extrabold text-white">Aproveitamento por Eixo de Conhecimento</h3>
+                <p class="text-xs text-stone-400">Escrevivência, Literatura Negra, Redação Crítica e Pensamento Decolonial</p>
+              </div>
+              <span class="px-2.5 py-1 text-xs rounded-lg bg-stone-800 text-amber-300 font-bold border border-amber-900/40">Ciclo 2026.2</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="studentPerformanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Feedbacks das Educadoras -->
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-sm flex flex-col">
+            <h3 class="text-base font-extrabold text-white mb-1">Pareceres das Educadoras</h3>
+            <p class="text-xs text-stone-400 mb-4">Comentários e orientações pedagógicas</p>
+            
+            <div id="alunoFeedbackList" class="space-y-3.5 flex-1 overflow-y-auto max-h-64 pr-1">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Tab 2: Ensaios, Atividades e Produções Textuais -->
+      <section id="alunoTabProvas" class="tab-pane hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Central de Produções Textuais & Ensaios</h2>
+            <p class="text-xs text-stone-400">Produza seus memoriais, responda questionários conceituais e envie para revisão das educadoras.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="renderStudentActivities()" class="px-3.5 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-xs text-amber-300 font-bold flex items-center gap-1.5 border border-stone-700 transition">
+              ↻ Atualizar Atividades
+            </button>
+          </div>
+        </div>
+
+        <!-- Activities List Grid -->
+        <div id="alunoActivitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Tab 3: Sala Virtual de Aula (Até 100 educandas) -->
+      <section id="alunoTabSala" class="tab-pane hidden space-y-4">
+        <div id="classroomStudentWrapper"></div>
+      </section>
+
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- 2. EDUCADORA VIEW: SALA, CORREÇÃO E RELATÓRIOS MENSAIS   -->
+    <!-- ======================================================== -->
+    <div id="professorContainer" class="space-y-6 role-container hidden">
+      
+      <!-- Tab 1: Sala de Aula Host (Até 100 participantes) -->
+      <section id="profTabSala" class="tab-pane space-y-4">
+        <div id="classroomHostWrapper"></div>
+      </section>
+
+      <!-- Tab 2: Correção de Atividades e Textos -->
+      <section id="profTabCorrecao" class="tab-pane hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Avaliação Pedagógica de Textos & Ensaios</h2>
+            <p class="text-xs text-stone-400">Revise as produções das educandas, atribua notas de 0 a 10 e registre o parecer pedagógico emancipatório.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="pendingSubmissionsBadge" class="px-3 py-1 text-xs font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              2 Produções Aguardando Avaliação
+            </span>
+          </div>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-stone-300">
+              <thead class="bg-stone-950/80 text-amber-400 uppercase font-bold border-b border-stone-800">
+                <tr>
+                  <th class="p-4">Educanda</th>
+                  <th class="p-4">Produção Textual / Ensaio</th>
+                  <th class="p-4">Data Envio</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4">Nota Atribuída</th>
+                  <th class="p-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="profSubmissionsTableBody" class="divide-y divide-stone-800/60">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Relatórios Mensais da Educadora (Bolsa e Prestação de Contas Baobá) -->
+      <section id="profTabRelatorios" class="tab-pane hidden space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Relatórios Mensais de Atividades Docentes</h2>
+            <p class="text-xs text-stone-400">Preste contas das oficinas ministradas no polo para auditoria e liberação do pagamento/bolsa pela Coordenação Master Baobá.</p>
+          </div>
+          <button onclick="openSubmitReportModal()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-600/30 transition">
+            + Lançar Novo Relatório Mensal
+          </button>
+        </div>
+
+        <!-- Teacher Earnings Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5">
+            <span class="text-xs font-bold text-stone-400 uppercase">Total Liquidado (Pago)</span>
+            <p id="profTotalPaidDisplay" class="text-2xl font-black text-emerald-400 mt-2">R$ 3.600,00</p>
+            <p class="text-[11px] text-stone-400 mt-1">Ref: Setembro/2026 (Liquidado via PIX Baobá)</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5">
+            <span class="text-xs font-bold text-stone-400 uppercase">Em Análise / Pendente</span>
+            <p id="profTotalPendingDisplay" class="text-2xl font-black text-amber-400 mt-2">R$ 3.960,00</p>
+            <p class="text-[11px] text-stone-400 mt-1">Ref: Outubro/2026 (44h ministradas)</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5">
+            <span class="text-xs font-bold text-stone-400 uppercase">Valor Hora Fomento</span>
+            <p id="profHourlyRateDisplay" class="text-2xl font-black text-white mt-2">R$ 90,00 / hora</p>
+            <p class="text-[11px] text-amber-400 font-semibold mt-1">Edital de Fomento à Docência Negra</p>
+          </div>
+        </div>
+
+        <!-- Teacher Reports History Table -->
+        <div class="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-stone-800 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Histórico de Relatórios e Pagamentos de Bolsas</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-stone-300">
+              <thead class="bg-stone-950/80 text-amber-400 uppercase font-bold border-b border-stone-800">
+                <tr>
+                  <th class="p-4">Mês Ref.</th>
+                  <th class="p-4">Carga Horária</th>
+                  <th class="p-4">Oficinas Dadas</th>
+                  <th class="p-4">Educandas Atendidas</th>
+                  <th class="p-4">Valor Total</th>
+                  <th class="p-4">Status Master Baobá</th>
+                  <th class="p-4">Comprovante / Obs</th>
+                </tr>
+              </thead>
+              <tbody id="profReportsTableBody" class="divide-y divide-stone-800/60">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- 3. MASTER BAOBÁ VIEW: ACOMPANHAMENTO E LIBERAÇÃO DE PIX -->
+    <!-- ======================================================== -->
+    <div id="masterContainer" class="space-y-6 role-container hidden">
+      
+      <!-- Master Tab 1: Gestão de Relatórios & Liberação de Pagamentos (MAIN REQUIREMENT) -->
+      <section id="masterTabFinanceiro" class="tab-pane space-y-6">
+        
+        <!-- Header Banner Baobá -->
+        <div class="bg-gradient-to-r from-amber-950/60 via-stone-900 to-orange-950/50 border border-amber-500/30 rounded-3xl p-6 lg:p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                👑 Coordenação Geral • Fundo Baobá
+              </span>
+              <h1 class="text-2xl font-black text-white mt-2">Acompanhamento de Relatórios & Liberação de Pagamentos</h1>
+              <p class="text-stone-300 text-sm max-w-3xl mt-1 leading-relaxed">
+                Audite os relatórios de atividades das educadoras populares de todos os Polos do projeto <em>Escritoras da Liberdade</em>. Valide a carga horária ministrada e libere os pagamentos/bolsas via PIX instantâneo com geração de recibo.
+              </p>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button onclick="renderMasterReports()" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-xs text-amber-300 font-bold flex items-center gap-2 border border-stone-700 transition">
+                ↻ Atualizar Relatórios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master KPI Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm">
+            <span class="text-xs font-bold text-stone-400 uppercase">Total Liquidado (Pago)</span>
+            <p id="masterKpiPaid" class="text-2xl font-black text-emerald-400 mt-2">R$ 3.600,00</p>
+            <p class="text-xs text-stone-400 mt-1">1 pagamento liquidado no ciclo</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm">
+            <span class="text-xs font-bold text-stone-400 uppercase">Pendente de Liberação</span>
+            <p id="masterKpiPending" class="text-2xl font-black text-amber-400 mt-2">R$ 10.450,00</p>
+            <p class="text-xs text-amber-400/80 mt-1">3 relatórios em análise</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm">
+            <span class="text-xs font-bold text-stone-400 uppercase">Polos Regionais Ativos</span>
+            <p class="text-2xl font-black text-amber-400 mt-2">3 Polos</p>
+            <p class="text-xs text-stone-400 mt-1">Salvador, SP e Rio de Janeiro</p>
+          </div>
+
+          <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-sm">
+            <span class="text-xs font-bold text-stone-400 uppercase">Educadoras Financiadas</span>
+            <p class="text-2xl font-black text-white mt-2">56 Educadoras</p>
+            <p class="text-xs text-stone-400 mt-1">Média R$ 90,00/h</p>
+          </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-bold text-stone-400">Filtrar por Status:</label>
+            <select id="masterFilterStatus" onchange="renderMasterReports()" class="bg-stone-800 text-xs text-stone-200 border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none">
+              <option value="all">Todos os Status</option>
+              <option value="pendente">Apenas Pendentes de Auditoria</option>
+              <option value="aprovado">Aprovados (Aguardando PIX)</option>
+              <option value="pago">Já Liquidados (Pagos)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-bold text-stone-400">Polo Regional:</label>
+            <select id="masterFilterTenant" onchange="renderMasterReports()" class="bg-stone-800 text-xs text-stone-200 border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none">
+              <option value="all">Todos os Polos</option>
+              <option value="tenant-baoba-salvador">Polo Dandara (Salvador)</option>
+              <option value="tenant-baoba-sp">Núcleo Carolina (SP)</option>
+              <option value="tenant-baoba-rj">Polo Lélia Gonzalez (RJ)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Master Reports Review & Payment Release Table -->
+        <div class="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-stone-800 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Relatórios Mensais Submetidos pelas Educadoras</h3>
+            <span class="text-xs text-amber-400 font-semibold">Audite a ementa e libere o pagamento via PIX</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-stone-300">
+              <thead class="bg-stone-950/80 text-amber-400 uppercase font-bold border-b border-stone-800">
+                <tr>
+                  <th class="p-4">Educadora</th>
+                  <th class="p-4">Polo Regional</th>
+                  <th class="p-4">Mês Ref.</th>
+                  <th class="p-4">Horas / Oficinas</th>
+                  <th class="p-4">Educandas Atendidas</th>
+                  <th class="p-4">Valor Total</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-right">Ação do Master</th>
+                </tr>
+              </thead>
+              <tbody id="masterReportsTableBody" class="divide-y divide-stone-800/60">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Master Tab 2: Visão Geral dos Polos -->
+      <section id="masterTabTenants" class="tab-pane hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-extrabold text-white">Polos Regionais do Projeto Baobá</h2>
+          <p class="text-xs text-stone-400">Acompanhamento das unidades e monitoramento de capacidade de salas virtuais (até 100 simultâneas).</p>
+        </div>
+
+        <div id="masterTenantsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALS                                                   -->
+  <!-- ======================================================== -->
+
+  <!-- Modal 1: Fazer Produção Textual / Ensaio (Educanda) -->
+  <div id="examModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-stone-800 flex items-center justify-between bg-stone-950/40">
+        <div>
+          <span id="examModalBadge" class="px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">ENSAIO & MEMORIAL</span>
+          <h3 id="examModalTitle" class="text-base font-bold text-white mt-1">Produção de Escrevivência</h3>
+          <p id="examModalMeta" class="text-xs text-stone-400">Profa. Me. Dandara Nascimento • Valor: 10.0 pts</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-stone-400">Tempo de entrega:</span>
+          <p class="text-sm font-mono font-bold text-amber-400">Aberto</p>
+        </div>
+      </div>
+
+      <div id="examModalQuestionsList" class="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-between">
+        <button onclick="closeExamModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-400 hover:text-white transition">
+          Cancelar
+        </button>
+        <button onclick="submitExamAnswers()" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs shadow-lg shadow-amber-600/30 transition">
+          Finalizar e Enviar para a Educadora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Corrigir Atividade (Educadora) -->
+  <div id="gradeModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-stone-800 flex items-center justify-between bg-stone-950/40">
+        <div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">PARECER DOCENTE</span>
+          <h3 id="gradeModalStudentName" class="text-base font-bold text-white mt-1">Avaliação Pedagógica</h3>
+          <p id="gradeModalActivityTitle" class="text-xs text-stone-400">Memorial de Escrevivência</p>
+        </div>
+        <button onclick="closeGradeModal()" class="text-stone-400 hover:text-white text-xl">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1 text-sm">
+        <input type="hidden" id="gradeModalSubmissionId">
+        
+        <div>
+          <label class="block text-xs font-bold text-stone-300 mb-1">Nota Atribuída (0 a 10.0)</label>
+          <input type="number" step="0.1" min="0" max="10" id="gradeModalScoreInput" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-white font-black text-lg focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-300 mb-1">Parecer Pedagógico & Comentários Afetuosos</label>
+          <textarea id="gradeModalFeedbackInput" rows="4" class="w-full bg-stone-800 border border-stone-700 rounded-xl p-3 text-xs text-stone-200 focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="Redija observações construtivas e encorajadoras sobre a escrita da educanda..."></textarea>
+        </div>
+
+        <div class="bg-stone-800/50 border border-stone-800 rounded-xl p-3 text-xs space-y-1">
+          <p class="font-bold text-stone-300">Respostas e Texto Submetido:</p>
+          <div id="gradeModalAnswersPreview" class="text-stone-400 text-[11px] space-y-1 font-mono"></div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-end gap-3">
+        <button onclick="closeGradeModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-400 hover:text-white transition">
+          Cancelar
+        </button>
+        <button onclick="saveGradeSubmission()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition">
+          Gravar Nota e Notificar Educanda
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Novo Relatório Mensal (Educadora) -->
+  <div id="reportModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-stone-800 flex items-center justify-between bg-stone-950/40">
+        <div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">PRESTAÇÃO DE CONTAS BAOBÁ</span>
+          <h3 class="text-base font-bold text-white mt-1">Relatório Mensal de Atividades</h3>
+          <p class="text-xs text-stone-400">Submeta para aprovação e liberação do pagamento/bolsa pelo Master</p>
+        </div>
+        <button onclick="closeSubmitReportModal()" class="text-stone-400 hover:text-white text-xl">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-stone-300 mb-1">Mês de Referência</label>
+            <input type="text" id="repInputMonth" value="11/2026" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block font-bold text-stone-300 mb-1">Carga Horária (Horas)</label>
+            <input type="number" id="repInputHours" value="40" oninput="calculateReportTotal()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-stone-300 mb-1">Qtd. de Oficinas / Aulas</label>
+            <input type="number" id="repInputClasses" value="20" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block font-bold text-stone-300 mb-1">Educandas Atendidas</label>
+            <input type="number" id="repInputStudents" value="180" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-300 mb-1">Ementa, Conteúdos e Metodologias Emancipatórias</label>
+          <textarea id="repInputDescription" rows="3" class="w-full bg-stone-800 border border-stone-700 rounded-xl p-3 text-stone-200" placeholder="Descreva os temas ministrados (ex: Escrevivência, Carolina Maria de Jesus), rodas de leitura e acompanhamentos..."></textarea>
+        </div>
+
+        <div class="bg-amber-950/40 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-stone-400 text-[11px]">Valor da Bolsa a Receber:</span>
+            <p id="repCalculatedTotal" class="text-xl font-black text-amber-400">R$ 3.600,00</p>
+          </div>
+          <span class="text-[11px] text-stone-400">R$ 90,00/h contratual</span>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-end gap-3">
+        <button onclick="closeSubmitReportModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-400 hover:text-white transition">
+          Cancelar
+        </button>
+        <button onclick="submitTeacherReport()" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs shadow-lg shadow-amber-600/30 transition">
+          Enviar para o Master Baobá
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Master - Detalhes e Liberação de Pagamento Baobá -->
+  <div id="masterPaymentModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-stone-800 flex items-center justify-between bg-stone-950/40">
+        <div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">AUDITORIA DO PROJETO BAOBÁ</span>
+          <h3 id="masterModalDocenteName" class="text-base font-bold text-white mt-1">Relatório Mensal da Educadora</h3>
+          <p id="masterModalTenantName" class="text-xs text-stone-400">Polo Regional Baobá</p>
+        </div>
+        <button onclick="closeMasterPaymentModal()" class="text-stone-400 hover:text-white text-xl">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+        <input type="hidden" id="masterModalReportId">
+        
+        <div class="grid grid-cols-3 gap-3 bg-stone-800/40 p-3 rounded-2xl border border-stone-800">
+          <div>
+            <span class="text-stone-400 block text-[11px]">Carga Horária:</span>
+            <span id="masterModalHours" class="font-bold text-white text-sm">44 h</span>
+          </div>
+          <div>
+            <span class="text-stone-400 block text-[11px]">Oficinas Dadas:</span>
+            <span id="masterModalClasses" class="font-bold text-white text-sm">22 oficinas</span>
+          </div>
+          <div>
+            <span class="text-stone-400 block text-[11px]">Educandas:</span>
+            <span id="masterModalStudents" class="font-bold text-white text-sm">185 atendidas</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-300 mb-1">Descrição e Ementa das Atividades</label>
+          <div id="masterModalDescription" class="bg-stone-800 p-3 rounded-xl text-stone-300 text-xs leading-relaxed border border-stone-700"></div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-300 mb-1">Parecer da Coordenação Master Baobá</label>
+          <input type="text" id="masterModalFeedback" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-white" placeholder="Ex: Carga horária e registros pedagógicos conferidos com louvor.">
+        </div>
+
+        <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-stone-400 text-[11px]">Valor Total da Bolsa:</span>
+            <p id="masterModalTotalAmount" class="text-2xl font-black text-emerald-400">R$ 3.960,00</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-emerald-300 font-bold">Transferência Instantânea PIX</span>
+            <p class="text-[10px] text-stone-400">Conta cadastrada no Projeto Baobá</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-between gap-3">
+        <button onclick="rejectReportMaster()" class="px-4 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 border border-rose-500/30 transition">
+          Solicitar Ajuste
+        </button>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="approveReportMasterOnly()" class="px-4 py-2 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 transition">
+            Apenas Validar Horas
+          </button>
+          <button onclick="releasePaymentMasterNow()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Liberar Pagamento PIX Agora
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-amber-900/30 bg-stone-950/90 py-5 px-4 text-center text-xs text-stone-500">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-stone-400">
+        <strong class="text-amber-400">Escritoras da Liberdade</strong> • Programa popular de ensino para pessoas pretas • <span class="text-stone-300 font-semibold">Projeto Baobá</span>
+      </p>
+      <div class="flex items-center gap-4 text-[11px] text-stone-400">
+        <span>Capacidade: 100 participantes simultâneas</span>
+        <span>•</span>
+        <span>Letramento & Escrevivência</span>
+        <span>•</span>
+        <span>Fundo Baobá para Equidade Racial</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

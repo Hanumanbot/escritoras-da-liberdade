@@ -1,0 +1,71 @@
+/* Custom styling for Escritoras da Liberdade - Projeto Baobá */
+
+:root {
+  --baoba-primary: #d97706;
+  --baoba-hover: #b45309;
+  --baoba-dark: #0c0a09;
+}
+
+.role-pill.active {
+  background-color: #d97706;
+  color: #0c0a09;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+}
+
+.tab-btn.active {
+  color: #fef3c7;
+  border-bottom: 2px solid #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* Custom warm scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1c1917;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #44403c;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #78350f;
+}
+
+/* Participant Tiles in 100-student room */
+.participant-tile {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.participant-tile:hover {
+  transform: translateY(-2px);
+  border-color: #d97706;
+}
+
+.speaking-pulse {
+  animation: speakingBorder 1.5s infinite;
+}
+
+@keyframes speakingBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+/* Whiteboard canvas styling */
+#whiteboardCanvas {
+  touch-action: none;
+  cursor: crosshair;
+}
